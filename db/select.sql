@@ -1,3 +1,2 @@
-select * from employee;
-select * from role; 
-select * from department;
+select first_name from employee 
+where manager_id = null;
