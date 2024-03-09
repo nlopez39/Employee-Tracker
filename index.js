@@ -69,7 +69,7 @@ function initializePrompt() {
           ])
           .then((result) => {
             const params = [result.roleTitle, result.roleSalary];
-            console.log(result);
+            // console.log(result);
             db.query("SELECT id, name FROM department", function (err, data) {
               const dept = data.map(({ id, name }) => ({
                 value: id,
@@ -87,8 +87,18 @@ function initializePrompt() {
                 .then((deptChoice) => {
                   const dept = deptChoice.roleDepartment;
                   params.push(dept);
-                  console.log(params);
-                  initializePrompt();
+                  //   console.log(params);
+                  //insert the params into an insert statement
+                  db.query(
+                    `INSERT INTO role ( title, salary, department_id) VALUES (${params[0]}, ${params[1]}, ${params[2]});`,
+                    function (error, result) {
+                      console.log("Success!");
+                    }
+                  );
+                  db.query("Select * from role", function (error, result) {
+                    console.table(result);
+                    initializePrompt();
+                  });
                 });
             });
           });
