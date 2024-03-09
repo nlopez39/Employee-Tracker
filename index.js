@@ -8,6 +8,9 @@ const db = mysql.createConnection({
   user: "root",
   password: "Monday23%",
   database: "employee_db",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 //create the prompts
@@ -28,19 +31,79 @@ var mainQuestion = [
     ],
   },
 ];
-//if user chose employees then out put employeees
-// //function to select employees table
-// function viewEmployees() {
-//   db.query("SELECT * FROM Employees", function (err, result) {
-//     console.log(results);
-//   });
-//}
-inquirer.prompt(mainQuestion).then((result) => {
-  if (result.firstPrompt == "View Employees") {
-    db.query("SELECT * FROM employee", function (err, result) {
-      console.log(result);
-    });
-  } else {
-    console.log("Failed");
-  }
-});
+
+function initializePrompt() {
+  inquirer.prompt(mainQuestion).then((result) => {
+    switch (result.firstPrompt) {
+      case "View Employees":
+        db.query("SELECT * FROM employee", function (err, result) {
+          console.table(result);
+          initializePrompt();
+        });
+        break;
+      case "View Departments":
+        db.query("SELECT * FROM department", function (err, result) {
+          console.table(result);
+          initializePrompt();
+        });
+        break;
+      case "View Roles":
+        db.query("SELECT * FROM role", function (err, result) {
+          console.table(result);
+          initializePrompt();
+        });
+        break;
+      case "Add Role":
+        inquirer
+          .prompt([
+            {
+              type: "input",
+              message: "What is the name of the role?",
+              name: "roleTitle",
+            },
+            {
+              type: "input",
+              message: "What is the salary ?",
+              name: "roleSalary",
+            },
+          ])
+          .then((result) => {
+            const params = [result.roleTitle, result.roleSalary];
+            console.log(result);
+            db.query("SELECT id, name FROM department", function (err, data) {
+              const dept = data.map(({ id, name }) => ({
+                value: id,
+                name: name,
+              }));
+              inquirer
+                .prompt([
+                  {
+                    type: "list",
+                    message: "What department is this role in?",
+                    name: "roleDepartment",
+                    choices: dept,
+                  },
+                ])
+                .then((deptChoice) => {
+                  const dept = deptChoice.roleDepartment;
+                  params.push(dept);
+                  console.log(params);
+                  initializePrompt();
+                });
+            });
+          });
+
+        break;
+
+      case "Quit":
+        db.end();
+        break;
+
+      default:
+        console.log("Invalid option. Please choose a valid option.");
+        initializePrompt();
+        break;
+    }
+  });
+}
+initializePrompt();
