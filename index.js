@@ -216,7 +216,67 @@ function initializePrompt() {
             });
           });
         break;
+      case "Update Employee Role":
+        db.query(
+          "Select employee.id, employee.first_name, employee.last_name, role.title from employee JOIN role on role.id = employee.role_id",
+          function (error, data) {
+            const dept = data.map(({ id, first_name }) => ({
+              value: id,
+              name: first_name,
+            }));
 
+            console.table(data);
+
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  message: "What is the first name of the employee?",
+                  name: "employeeName",
+                  choices: dept,
+                },
+              ])
+              .then((result) => {
+                const params = [result.employeeName];
+                db.query("Select id, title from role", function (err, data) {
+                  //map results
+                  const role = data.map(({ id, title }) => ({
+                    value: id,
+                    name: title,
+                  }));
+                  inquirer
+                    .prompt([
+                      {
+                        type: "list",
+                        message: "What role do you want instead?",
+                        name: "newRole",
+                        choices: role,
+                      },
+                    ])
+                    .then((result) => {
+                      const updateRole = result.newRole;
+                      params.push(updateRole);
+                      //   console.log(params);
+                      const sqlQuery =
+                        "UPDATE employee SET role_id = ? WHERE id = ?";
+                      const sqlValues = [params[1], params[0]];
+                      db.query(sqlQuery, sqlValues, function (error, result) {
+                        console.log("Success!");
+                      });
+                      db.query(
+                        "Select employee.first_name, employee.last_name, role.title from employee JOIN role on role.id = employee.role_id",
+                        function (error, result) {
+                          console.table(result);
+                          initializePrompt();
+                        }
+                      );
+                    });
+                });
+              });
+          }
+        );
+
+        break;
       case "Quit":
         db.end();
         break;
