@@ -192,6 +192,31 @@ function initializePrompt() {
 
         break;
 
+      case "Add Department":
+        //call an inquirer prompt
+        inquirer
+          .prompt([
+            {
+              type: "input",
+              message: "What is the name of the department?",
+              name: "deptName",
+            },
+          ])
+          .then((result) => {
+            db.query(
+              `Insert into department (name) Values (?)`,
+              result.deptName,
+              function (error, data) {
+                console.log("Successfully added New Department");
+              }
+            );
+            db.query("Select * from department", function (err, result) {
+              console.table(result);
+              initializePrompt();
+            });
+          });
+        break;
+
       case "Quit":
         db.end();
         break;
