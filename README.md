@@ -15,7 +15,7 @@ This command-line app is a content management system that allows the user to man
 
 ### Demo
 
-[Demo Video]()
+[Demo Video](https://drive.google.com/file/d/1fIZRYxBEzH-1lwewNjt7ccpvi8BL21WZ/view?usp=sharing)
 
 ## Installation
 
